@@ -1,13 +1,111 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// Prisma schema — Driving Instruction & Hazard Perception Training Platform
+// Datasource uses Supabase: pooled URL for runtime, direct URL for migrations.
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String // "learner" | "instructor" | "admin"
+  createdAt    DateTime @default(now())
+
+  instructorProfile    InstructorProfile?
+  testResults          TestResult[]
+  availabilities       Availability[]     @relation("InstructorAvailabilities")
+  bookingsAsLearner    Booking[]          @relation("LearnerBookings")
+  bookingsAsInstructor Booking[]          @relation("InstructorBookings")
+}
+
+model InstructorProfile {
+  id         Int     @id @default(autoincrement())
+  userId     Int     @unique
+  bio        String?
+  location   String
+  hourlyRate Float
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TheoryQuestion {
+  id            Int    @id @default(autoincrement())
+  questionText  String
+  optionA       String
+  optionB       String
+  optionC       String
+  optionD       String
+  correctOption String // "a" | "b" | "c" | "d"
+  category      String
+
+  explanations AIExplanation[]
+}
+
+model AIExplanation {
+  id             Int      @id @default(autoincrement())
+  questionId     Int
+  selectedOption String
+  responseText   String
+  createdAt      DateTime @default(now())
+
+  question TheoryQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([questionId, selectedOption]) // enables cache lookup by (question, choice)
+}
+
+model HazardQuestion {
+  id            Int    @id @default(autoincrement())
+  imageUrl      String
+  questionText  String
+  optionA       String
+  optionB       String
+  optionC       String
+  optionD       String
+  correctOption String
+  description   String
+}
+
+model TestResult {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  score          Int
+  totalQuestions Int
+  passed         Boolean
+  type           String // "theory" | "hazard"
+  takenAt        DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Availability {
+  id           Int     @id @default(autoincrement())
+  instructorId Int
+  slotDate     String
+  startTime    String
+  endTime      String
+  isBooked     Boolean @default(false)
+
+  instructor User     @relation("InstructorAvailabilities", fields: [instructorId], references: [id], onDelete: Cascade)
+  booking    Booking?
+}
+
+model Booking {
+  id             Int      @id @default(autoincrement())
+  learnerId      Int
+  instructorId   Int
+  availabilityId Int      @unique
+  status         String // "confirmed" | "cancelled"
+  createdAt      DateTime @default(now())
+
+  learner      User         @relation("LearnerBookings", fields: [learnerId], references: [id], onDelete: Cascade)
+  instructor   User         @relation("InstructorBookings", fields: [instructorId], references: [id], onDelete: Cascade)
+  availability Availability @relation(fields: [availabilityId], references: [id], onDelete: Cascade)
 }
