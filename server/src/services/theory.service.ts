@@ -1,4 +1,6 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
+import { geminiModel } from "../lib/gemini";
 
 const QUESTION_COUNT = 10;
 const PASS_THRESHOLD = 0.86; // matches UK DVSA pass mark (43/50)
@@ -8,6 +10,13 @@ export class ValidationError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "ValidationError";
+  }
+}
+
+export class NotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "NotFoundError";
   }
 }
 
@@ -118,4 +127,105 @@ export async function submitTest(
   });
 
   return { score, total, passed, results };
+}
+
+function buildExplanationPrompt(
+  question: {
+    questionText: string;
+    optionA: string;
+    optionB: string;
+    optionC: string;
+    optionD: string;
+    correctOption: string;
+  },
+  selectedOption: string
+): string {
+  const optionTextByLetter: Record<string, string> = {
+    a: question.optionA,
+    b: question.optionB,
+    c: question.optionC,
+    d: question.optionD,
+  };
+  const selectedLabel = selectedOption.toUpperCase();
+  const selectedText = optionTextByLetter[selectedOption];
+  const correctLabel = question.correctOption.toUpperCase();
+  const correctText = optionTextByLetter[question.correctOption];
+
+  return `You are a friendly UK driving theory test tutor.
+
+A learner answered the following multiple-choice question incorrectly.
+
+Question: ${question.questionText}
+Options:
+  a) ${question.optionA}
+  b) ${question.optionB}
+  c) ${question.optionC}
+  d) ${question.optionD}
+
+The learner chose: ${selectedLabel} (${selectedText})
+The correct answer is: ${correctLabel} (${correctText})
+
+In 2-4 short sentences, explain in plain English why the learner's answer is wrong and why the correct answer is right. Be encouraging and concise. Do not greet the learner or restate the question.`;
+}
+
+export async function explainAnswer(
+  questionId: number,
+  selectedOption: string
+): Promise<{ cached: boolean; explanation: string }> {
+  if (!VALID_OPTIONS.includes(selectedOption as (typeof VALID_OPTIONS)[number])) {
+    throw new ValidationError("selectedOption must be one of a, b, c, d");
+  }
+
+  // Cache-first (CLAUDE.md rule #4 / FR-08 / R-03).
+  const cached = await prisma.aIExplanation.findUnique({
+    where: { questionId_selectedOption: { questionId, selectedOption } },
+  });
+  if (cached) {
+    return { cached: true, explanation: cached.responseText };
+  }
+
+  const question = await prisma.theoryQuestion.findUnique({
+    where: { id: questionId },
+  });
+  if (!question) {
+    throw new NotFoundError(`question ${questionId} not found`);
+  }
+
+  if (selectedOption === question.correctOption) {
+    throw new ValidationError(
+      "explanations are only available for incorrect answers"
+    );
+  }
+
+  const prompt = buildExplanationPrompt(question, selectedOption);
+  const result = await geminiModel.generateContent(prompt);
+  const explanation = result.response.text().trim();
+
+  if (!explanation) {
+    throw new Error("Gemini returned an empty response");
+  }
+
+  try {
+    await prisma.aIExplanation.create({
+      data: { questionId, selectedOption, responseText: explanation },
+    });
+  } catch (err) {
+    // P2002 = unique constraint violation: another concurrent request beat us
+    // to populating the cache. Re-fetch and return the winner's explanation
+    // so the response is consistent.
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2002"
+    ) {
+      const winner = await prisma.aIExplanation.findUnique({
+        where: { questionId_selectedOption: { questionId, selectedOption } },
+      });
+      if (winner) {
+        return { cached: true, explanation: winner.responseText };
+      }
+    }
+    throw err;
+  }
+
+  return { cached: false, explanation };
 }
