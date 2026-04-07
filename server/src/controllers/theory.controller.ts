@@ -2,7 +2,9 @@ import { Request, Response } from "express";
 import {
   getRandomQuestions,
   submitTest as submitTestService,
+  explainAnswer as explainAnswerService,
   ValidationError,
+  NotFoundError,
   SubmitAnswer,
 } from "../services/theory.service";
 
@@ -49,6 +51,30 @@ export async function submitTest(req: Request, res: Response) {
       return res.status(400).json({ error: err.message });
     }
     console.error("submitTest error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+export async function explainAnswer(req: Request, res: Response) {
+  try {
+    const { questionId, selectedOption } = req.body ?? {};
+
+    if (typeof questionId !== "number" || typeof selectedOption !== "string") {
+      return res.status(400).json({
+        error: "questionId (number) and selectedOption (string) are required",
+      });
+    }
+
+    const result = await explainAnswerService(questionId, selectedOption);
+    return res.status(200).json(result);
+  } catch (err) {
+    if (err instanceof ValidationError) {
+      return res.status(400).json({ error: err.message });
+    }
+    if (err instanceof NotFoundError) {
+      return res.status(404).json({ error: err.message });
+    }
+    console.error("explainAnswer error:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
 }
