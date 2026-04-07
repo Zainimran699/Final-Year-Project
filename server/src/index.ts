@@ -6,6 +6,7 @@ import theoryRoutes from "./routes/theory.routes";
 import hazardRoutes from "./routes/hazard.routes";
 import instructorRoutes from "./routes/instructor.routes";
 import bookingRoutes from "./routes/booking.routes";
+import progressRoutes from "./routes/progress.routes";
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use("/api/theory", theoryRoutes);
 app.use("/api/hazard", hazardRoutes);
 app.use("/api/instructors", instructorRoutes);
 app.use("/api/bookings", bookingRoutes);
+app.use("/api/progress", progressRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
