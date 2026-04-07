@@ -92,7 +92,7 @@ These are non-obvious constraints that come from the project spec / report and m
 4. **AI explanations must hit the cache before calling Gemini.** The `AIExplanation` table has `@@unique([questionId, selectedOption])` precisely so the cache lookup is a single `findUnique`. This is FR-08 in the report and risk R-03 (Gemini free-tier rate limit). Never call Gemini without checking the cache first.
 5. **`passwordHash` must never be returned in any API response.** Strip it explicitly when building user objects to send to the client.
 6. **`correctOption` must be stripped from question payloads when serving them to learners** for the test/practice routes. It's only included on the submission-result response.
-7. **Gemini model is `gemini-1.5-flash`** via the `@google/generative-ai` package. Prompt template lives in the spec — keep it the way it is (the report's evaluation depends on the explanation style being consistent).
+7. **Gemini model is `gemini-2.0-flash`** via the `@google/generative-ai` package. The original spec called for `gemini-1.5-flash`, but Google has retired that model from the v1beta API (`404 Not Found ... not supported for generateContent`), so we use the natural successor on the same free tier. The model name lives in [server/src/lib/gemini.ts](server/src/lib/gemini.ts). The prompt template (in [server/src/services/theory.service.ts](server/src/services/theory.service.ts) `buildExplanationPrompt`) is intentionally stable — the report's evaluation depends on the explanation style being consistent, so don't tweak it casually.
 
 ## Build order
 
