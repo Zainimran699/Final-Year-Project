@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes";
 import theoryRoutes from "./routes/theory.routes";
 import hazardRoutes from "./routes/hazard.routes";
+import instructorRoutes from "./routes/instructor.routes";
+import bookingRoutes from "./routes/booking.routes";
 
 dotenv.config();
 
@@ -23,6 +25,8 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/theory", theoryRoutes);
 app.use("/api/hazard", hazardRoutes);
+app.use("/api/instructors", instructorRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
