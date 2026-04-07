@@ -55,7 +55,7 @@ The database is **Supabase-hosted PostgreSQL**, accessed via Prisma. Two connect
 
 Both are referenced from the `datasource db` block in `schema.prisma`. If migrations fail with "prepared statement does not exist" or similar, the `DIRECT_URL` is the thing to check.
 
-Other env vars: `JWT_SECRET`, `GEMINI_API_KEY`, `PORT` (defaults to 5000). See [server/.env.example](server/.env.example) for the template.
+Other env vars: `JWT_SECRET`, `GEMINI_API_KEY`, `PORT` (set to **5001** — port 5000 is taken by macOS AirPlay Receiver on Monterey+, which silently 403s every request). See [server/.env.example](server/.env.example) for the template. The client's `VITE_API_URL` must point at the same port.
 
 The seed file ([server/prisma/seed.ts](server/prisma/seed.ts)) creates three test accounts:
 

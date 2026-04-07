@@ -23,7 +23,7 @@ Final-year project: a full-stack web app that helps learner drivers prepare for 
 
 1. `cd server && cp .env.example .env` and fill in your Supabase `DATABASE_URL` / `DIRECT_URL`, a `JWT_SECRET`, and a `GEMINI_API_KEY`.
 2. `cd server && npx prisma migrate dev && npx prisma db seed`
-3. `cd server && npm run dev` (starts API on `http://localhost:5000`)
+3. `cd server && npm run dev` (starts API on `http://localhost:5001`)
 4. `cd client && npm run dev` (starts UI on `http://localhost:5173`)
 
 ### Test accounts (created by the seed)
