@@ -108,3 +108,39 @@ export async function getInstructorById(
     availability: futureSlots,
   };
 }
+
+export type InstructorBookingRow = {
+  id: number;
+  status: string;
+  createdAt: Date;
+  learner: { id: number; name: string };
+  availability: {
+    id: number;
+    slotDate: string;
+    startTime: string;
+    endTime: string;
+  };
+};
+
+export async function listMyBookings(
+  instructorId: number
+): Promise<InstructorBookingRow[]> {
+  return prisma.booking.findMany({
+    where: { instructorId },
+    select: {
+      id: true,
+      status: true,
+      createdAt: true,
+      learner: { select: { id: true, name: true } },
+      availability: {
+        select: {
+          id: true,
+          slotDate: true,
+          startTime: true,
+          endTime: true,
+        },
+      },
+    },
+    orderBy: [{ createdAt: "desc" }],
+  });
+}

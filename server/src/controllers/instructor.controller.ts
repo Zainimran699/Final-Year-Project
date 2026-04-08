@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import {
   listInstructors as listInstructorsService,
   getInstructorById,
+  listMyBookings as listMyBookingsService,
   NotFoundError,
 } from "../services/instructor.service";
 
@@ -29,6 +30,17 @@ export async function getInstructor(req: Request, res: Response) {
       return res.status(404).json({ error: err.message });
     }
     console.error("instructor getInstructor error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+export async function listMyBookings(req: Request, res: Response) {
+  try {
+    const instructorId = req.user!.id;
+    const bookings = await listMyBookingsService(instructorId);
+    return res.status(200).json({ bookings });
+  } catch (err) {
+    console.error("instructor listMyBookings error:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
 }
