@@ -8,6 +8,7 @@ import instructorRoutes from "./routes/instructor.routes";
 import bookingRoutes from "./routes/booking.routes";
 import progressRoutes from "./routes/progress.routes";
 import availabilityRoutes from "./routes/availability.routes";
+import adminRoutes from "./routes/admin.routes";
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.use("/api/instructors", instructorRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/availability", availabilityRoutes);
+app.use("/api/admin", adminRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
