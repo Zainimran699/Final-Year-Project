@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 import type { Role } from "../types";
 
 // Route guard for role-specific sections (instructor-only, admin-only, etc.).
