@@ -9,6 +9,7 @@ import RequireAuth from "./components/RequireAuth";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import Theory from "./pages/Theory";
 
 // Root layout route wraps every page in the AuthProvider so the context is
 // available throughout the tree. Children split into public (login/register)
@@ -29,6 +30,7 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <Navigate to="/dashboard" replace /> },
           { path: "dashboard", element: <Dashboard /> },
+          { path: "theory", element: <Theory /> },
         ],
       },
       { path: "*", element: <Navigate to="/dashboard" replace /> },

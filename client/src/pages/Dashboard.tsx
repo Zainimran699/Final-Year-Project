@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
 export default function Dashboard() {
@@ -19,6 +19,18 @@ export default function Dashboard() {
         <h1 className="text-2xl font-semibold mb-2">Welcome, {user.name}</h1>
         <p className="text-gray-700 mb-1">Email: {user.email}</p>
         <p className="text-gray-700 mb-4">Role: {user.role}</p>
+
+        {user.role === "learner" && (
+          <div className="mb-4">
+            <Link
+              to="/theory"
+              className="inline-block bg-blue-600 text-white rounded px-4 py-2"
+            >
+              Start theory practice
+            </Link>
+          </div>
+        )}
+
         <button
           onClick={handleLogout}
           className="bg-gray-800 text-white rounded px-4 py-2"
