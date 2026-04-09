@@ -4,7 +4,7 @@ import {
   Outlet,
   RouterProvider,
 } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthProvider";
 import RequireAuth from "./components/RequireAuth";
 import Login from "./pages/Login";
 import Register from "./pages/Register";

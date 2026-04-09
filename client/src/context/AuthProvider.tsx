@@ -1,28 +1,8 @@
-import { createContext, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import api from "../api";
-import type {
-  AuthResponse,
-  RegisterResponse,
-  Role,
-  User,
-} from "../types";
-
-export type AuthContextValue = {
-  user: User | null;
-  token: string | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (
-    name: string,
-    email: string,
-    password: string,
-    role: Role
-  ) => Promise<void>;
-  logout: () => void;
-};
-
-export const AuthContext = createContext<AuthContextValue | null>(null);
+import type { AuthResponse, RegisterResponse, Role, User } from "../types";
+import { AuthContext } from "./AuthContext";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
