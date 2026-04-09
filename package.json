@@ -1,0 +1,11 @@
+{
+  "name": "final-year-project",
+  "private": true,
+  "scripts": {
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "install:all": "cd server && npm install && cd ../client && npm install",
+    "seed": "cd server && npm run prisma:seed",
+    "migrate": "cd server && npm run prisma:migrate"
+  }
+}

@@ -37,6 +37,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("user", JSON.stringify(newUser));
       setToken(newToken);
       setUser(newUser);
+      // Return the user so the caller (Login page) can pick a role-specific
+      // destination without racing the setState commit.
+      return newUser;
     } finally {
       setLoading(false);
     }
@@ -64,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem("user", JSON.stringify(newUser));
         setToken(newToken);
         setUser(newUser);
+        return newUser;
       } finally {
         setLoading(false);
       }

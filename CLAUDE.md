@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **IMPORTANT — monorepo npm rule:** this project has **no installable packages at the repo root**. Always `cd` into `server/` or `client/` before running `npm` commands, or use the convenience scripts in the root [package.json](package.json) (`npm run dev:server`, `npm run dev:client`, `npm run install:all`, `npm run seed`, `npm run migrate`). The root `package.json` exists only to dispatch into the subpackages — it has no dependencies. Do **not** run `npm install` at the root.
+
 ## Project context
 
 Final-year project by Zain Imran (supervisor: Mohsen Zahedi) — a UK driving theory + hazard perception training platform with AI-generated explanations and an instructor booking marketplace. The full design document (use cases, ER diagram, architecture, ethics, risk register) lives in `report fyp.pdf` at the project root and is the authoritative source for *what* the system must do; the implementation spec (routes, pages, models, 19-step build order) was provided in the conversation that scaffolded this repo.
@@ -45,6 +47,37 @@ npm run build    # type-check + production build
 npm run preview  # serve the built bundle
 npm run lint     # ESLint (Vite default config)
 ```
+
+### Running the full app end-to-end
+
+The client and server are independent processes — both must be running to use the app in a browser. Step-by-step from a fresh clone:
+
+1. **Install deps once per package** (only needed after `git clone` or a `package.json` change):
+   ```bash
+   cd server && npm install
+   cd ../client && npm install
+   ```
+2. **Create `server/.env`** by copying [server/.env.example](server/.env.example) and filling in `DATABASE_URL`, `DIRECT_URL`, `JWT_SECRET`, `GEMINI_API_KEY`. `PORT=5001` is already set.
+3. **Create `client/.env`** by copying [client/.env.example](client/.env.example). `VITE_API_URL=http://localhost:5001` is the only line and matches the server's port.
+4. **Apply migrations + seed the database** (only needed after schema changes or to restore the test users):
+   ```bash
+   cd server
+   npm run prisma:migrate   # applies any pending migrations
+   npm run prisma:seed      # wipes & reseeds 3 users + 15 theory + 5 hazard
+   ```
+5. **Start the server** in one terminal:
+   ```bash
+   cd server && npm run dev
+   # → "Server running on port 5001"
+   ```
+6. **Start the client** in a second terminal:
+   ```bash
+   cd client && npm run dev
+   # → Vite serves http://localhost:5173
+   ```
+7. **Open the browser** at http://localhost:5173. Unauthenticated visits redirect to `/login`. Use any of the seeded credentials in the table below to sign in. After login you land on `/dashboard`; learners see a "Start theory practice" button that opens [client/src/pages/Theory.tsx](client/src/pages/Theory.tsx).
+
+To shut down: Ctrl+C in each terminal. The dev servers are stateless — restart freely; nothing in `localStorage` survives beyond the browser tab.
 
 ## Database & environment
 
@@ -93,6 +126,7 @@ These are non-obvious constraints that come from the project spec / report and m
 5. **`passwordHash` must never be returned in any API response.** Strip it explicitly when building user objects to send to the client.
 6. **`correctOption` must be stripped from question payloads when serving them to learners** for the test/practice routes. It's only included on the submission-result response.
 7. **Gemini model is `gemini-2.0-flash`** via the `@google/generative-ai` package. The original spec called for `gemini-1.5-flash`, but Google has retired that model from the v1beta API (`404 Not Found ... not supported for generateContent`), so we use the natural successor on the same free tier. The model name lives in [server/src/lib/gemini.ts](server/src/lib/gemini.ts). The prompt template (in [server/src/services/theory.service.ts](server/src/services/theory.service.ts) `buildExplanationPrompt`) is intentionally stable — the report's evaluation depends on the explanation style being consistent, so don't tweak it casually.
+8. **Gemini upstream errors must surface as HTTP 503**, not 500. The `@google/generative-ai` SDK throws a `GoogleGenerativeAIFetchError` carrying a numeric `status` (429 quota, 5xx outage, etc.). [server/src/controllers/theory.controller.ts](server/src/controllers/theory.controller.ts) `explainAnswer` detects this by `err.constructor?.name?.startsWith("GoogleGenerativeAI")` and responds with `503 { error: "AI explanation is temporarily unavailable. Please try again later." }`. The Theory page renders that string verbatim, so the learner sees a friendly retry hint instead of an opaque 500. Risk R-03 in the report.
 
 ## Build order
 
@@ -103,9 +137,46 @@ The plan files for completed/in-progress phases live in `~/.claude/plans/` and c
 ## Frontend conventions
 
 - **One component per file.** Pages live alongside their components — keep them small.
-- **All API calls go through a single `client/src/api.ts`** that wraps Axios with `VITE_API_URL` and an interceptor that injects `Authorization: Bearer <token>` from `localStorage`. Don't call `axios` directly from components.
+- **All API calls go through a single [client/src/api.ts](client/src/api.ts)** that wraps Axios with `VITE_API_URL` and an interceptor that injects `Authorization: Bearer <token>` from `localStorage`. Don't call `axios` directly from components.
 - **JWT is stored in `localStorage`** on login and read by the Axios interceptor. There is no refresh-token flow.
-- **Routing uses `react-router-dom`** with role-gated routes (learner / instructor / admin pages).
+- **401 interceptor → hard logout.** The Axios response interceptor in [client/src/api.ts](client/src/api.ts) catches any `401`, clears `localStorage` (`token` + `user`), and `window.location.assign("/login")`. The hard navigation is intentional — the interceptor lives outside the React tree so it can't call `useNavigate()`. This is the replacement for a refresh-token flow.
+- **Auth state lives in a 3-file React context split:**
+  - [client/src/context/AuthContext.ts](client/src/context/AuthContext.ts) — `createContext` + the `AuthContextValue` type. **No JSX, no components.**
+  - [client/src/context/AuthProvider.tsx](client/src/context/AuthProvider.tsx) — the `AuthProvider` component only. Holds `user`, `token`, `loading` state; rehydrates from `localStorage` on mount; exposes `login`, `register`, `logout` via `useCallback`.
+  - [client/src/context/useAuth.ts](client/src/context/useAuth.ts) — the `useAuth()` hook only. Throws if used outside the provider.
+  This split is **not** stylistic — it satisfies ESLint's `react-refresh/only-export-components` rule, which forbids a `.tsx` file from exporting both a component and a non-component (hook, context, type). Collapsing them back into one file will fail `npm run lint`.
+- **Auto-login after register.** [client/src/context/AuthProvider.tsx](client/src/context/AuthProvider.tsx) `register()` POSTs to `/api/auth/register` (which returns `{user}` only, no token), and on success immediately calls its own `login(email, password)` with the credentials the user just typed. The user lands on `/dashboard` without seeing a second form. If the auto-login fails after a successful register, the error bubbles to the Register page.
+- **Router is `react-router-dom@7` data-router style** (`createBrowserRouter` + `RouterProvider`) in [client/src/App.tsx](client/src/App.tsx). The shape:
+  - Root layout route wraps everything in `<AuthProvider><Outlet /></AuthProvider>` so the auth context is available to every page.
+  - Public branch: `/login`, `/register`.
+  - Private branch: `path: "/"` with `element: <RequireAuth />` and child routes (`/dashboard`, `/theory`, etc.). [client/src/components/RequireAuth.tsx](client/src/components/RequireAuth.tsx) renders `<Navigate to="/login" replace />` if `useAuth().user` is null, else `<Outlet />`.
+  - Catch-all `path: "*"` bounces unknown URLs to `/dashboard` (which transitively bounces to `/login` for unauthed users).
+  - Role-gated routes use [client/src/components/RequireRole.tsx](client/src/components/RequireRole.tsx) (`<RequireRole role="instructor" />`) — same pattern as RequireAuth, redirects to `/dashboard` on role mismatch.
+- **TypeScript strictness in `client/tsconfig.app.json` is unusually picky.** Three flags bite often:
+  - `verbatimModuleSyntax: true` — every type-only import **must** use `import type { ... }`. Importing `User` as a value when it's only used as a type fails the build.
+  - `erasableSyntaxOnly: true` — no TS `enum`s, no parameter properties. Use `type Role = "learner" | "instructor" | "admin"` (string literal union) instead.
+  - `noUnusedLocals: true` — leftover imports after a refactor break the build.
+- **Frontend file layout** (post-Phase 14):
+  ```
+  client/src/
+  ├── api.ts                  # singleton Axios — only file that imports axios
+  ├── types.ts                # shared types (User, Role, TheoryQuestion, ...)
+  ├── App.tsx                 # createBrowserRouter shell
+  ├── main.tsx                # ReactDOM.createRoot — unchanged from Vite default
+  ├── index.css               # @tailwind directives + body reset
+  ├── context/
+  │   ├── AuthContext.ts      # context object + value type
+  │   ├── AuthProvider.tsx    # provider component
+  │   └── useAuth.ts          # hook
+  ├── components/
+  │   ├── RequireAuth.tsx     # auth route guard
+  │   └── RequireRole.tsx     # role route guard (used by instructor/admin pages)
+  └── pages/
+      ├── Login.tsx
+      ├── Register.tsx
+      ├── Dashboard.tsx
+      └── Theory.tsx          # quiz UI — calls /api/theory/{questions,submit,explain}
+  ```
 
 ## When in doubt
 
