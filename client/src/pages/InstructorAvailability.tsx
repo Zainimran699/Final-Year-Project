@@ -36,12 +36,13 @@ export default function InstructorAvailability() {
     if (!slotDate || !startTime || !endTime) return;
     setAdding(true);
     try {
-      const res = await api.post<{ slot: ManagedSlot }>("/api/availability", {
+      // Backend returns { availability: {...} }, so unwrap the named key.
+      const res = await api.post<{ availability: ManagedSlot }>("/api/availability", {
         slotDate,
         startTime,
         endTime,
       });
-      setSlots((prev) => (prev ? [res.data.slot, ...prev] : [res.data.slot]));
+      setSlots((prev) => (prev ? [res.data.availability, ...prev] : [res.data.availability]));
       setToast({ message: "Slot added!", type: "success" });
       // Reset form.
       setSlotDate("");

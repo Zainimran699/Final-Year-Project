@@ -93,6 +93,17 @@ export default function Navbar() {
               </Link>
             );
           })}
+          {/* Contact link — available to all authenticated users */}
+          <Link
+            to="/contact"
+            className={
+              isActive(pathname, "/contact")
+                ? "text-blue-600 font-semibold border-b-2 border-blue-600 pb-1"
+                : "text-gray-600 hover:text-gray-900 font-medium pb-1 border-b-2 border-transparent"
+            }
+          >
+            Contact
+          </Link>
           <button
             type="button"
             onClick={handleLogout}

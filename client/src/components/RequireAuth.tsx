@@ -9,7 +9,8 @@ import Navbar from "./Navbar";
 export default function RequireAuth() {
   const { user } = useAuth();
   if (!user) {
-    return <Navigate to="/login" replace />;
+    // Redirect unauthenticated users to the public landing page.
+    return <Navigate to="/" replace />;
   }
   return (
     <>

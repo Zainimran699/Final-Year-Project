@@ -9,8 +9,11 @@ import RequireAuth from "./components/RequireAuth";
 import RequireRole from "./components/RequireRole";
 
 // Public pages
+import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Contact from "./pages/Contact";
+import FAQ from "./pages/FAQ";
 
 // Learner pages
 import Dashboard from "./pages/Dashboard";
@@ -38,8 +41,10 @@ import AdminLearners from "./pages/AdminLearners";
 //   <AuthProvider>                      ← root, gives auth context to all routes
 //     <Outlet />                        ← renders the matched child
 //   </AuthProvider>
-//     ├── /login, /register             ← public
-//     └── RequireAuth                   ← guards everything below, renders <Navbar /><Outlet />
+//     ├── / (Landing page)              ← public homepage (always shown first)
+//     ├── /login, /register             ← public auth pages
+//     ├── /contact, /faq               ← public info pages
+//     └── /dashboard + RequireAuth      ← guards everything below, renders <Navbar /><Outlet />
 //           ├── RequireRole "learner"
 //           │     ├── /dashboard
 //           │     ├── /theory
@@ -55,14 +60,8 @@ import AdminLearners from "./pages/AdminLearners";
 //           └── /admin + RequireRole "admin"
 //                 ├── /admin/dashboard
 //                 ├── /admin/questions
-//                 └── /admin/hazard
-//
-// Unknown URL handling:
-//   - Unauthed → RequireAuth bounces to /login.
-//   - Authed but wrong role → RequireRole bounces to THEIR role's dashboard
-//     (see dashboardPathForRole). This prevents an infinite loop where an
-//     instructor is sent to /dashboard, which is itself guarded by
-//     RequireRole "learner", which would bounce them again.
+//                 ├── /admin/hazard
+//                 └── /admin/learners
 const router = createBrowserRouter([
   {
     element: (
@@ -71,19 +70,17 @@ const router = createBrowserRouter([
       </AuthProvider>
     ),
     children: [
-      // Public branch
+      // Public pages — accessible without login
+      { path: "/", element: <Landing /> },
       { path: "/login", element: <Login /> },
       { path: "/register", element: <Register /> },
+      { path: "/contact", element: <Contact /> },
+      { path: "/faq", element: <FAQ /> },
 
-      // Private branch
+      // Private branch — requires authentication
       {
-        path: "/",
         element: <RequireAuth />,
         children: [
-          // `/` → /dashboard, and the learner RequireRole below will bounce
-          // non-learners to their own home via the smart fallback.
-          { index: true, element: <Navigate to="/dashboard" replace /> },
-
           // Learner routes
           {
             element: <RequireRole role="learner" />,
@@ -123,10 +120,8 @@ const router = createBrowserRouter([
         ],
       },
 
-      // Catch-all for any unknown URL. Sends the user through /dashboard,
-      // which (via RequireAuth + RequireRole) ultimately lands them either
-      // on /login (unauthed) or their role-specific home.
-      { path: "*", element: <Navigate to="/dashboard" replace /> },
+      // Catch-all: unknown URLs go to the landing page.
+      { path: "*", element: <Navigate to="/" replace /> },
     ],
   },
 ]);
