@@ -17,6 +17,7 @@ model User {
   email        String   @unique
   passwordHash String
   role         String // "learner" | "instructor" | "admin"
+  location     String? // postcode or town entered at registration
   createdAt    DateTime @default(now())
 
   instructorProfile    InstructorProfile?
@@ -74,13 +75,14 @@ model HazardQuestion {
 }
 
 model TestResult {
-  id             Int      @id @default(autoincrement())
-  userId         Int
-  score          Int
-  totalQuestions Int
-  passed         Boolean
-  type           String // "theory" | "hazard"
-  takenAt        DateTime @default(now())
+  id               Int      @id @default(autoincrement())
+  userId           Int
+  score            Int
+  totalQuestions   Int
+  passed           Boolean
+  type             String // "theory" | "hazard"
+  timeTakenSeconds Int? // seconds from start to submit (null for legacy rows)
+  takenAt          DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

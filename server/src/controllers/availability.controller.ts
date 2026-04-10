@@ -2,11 +2,24 @@ import { Request, Response } from "express";
 import {
   createAvailability as createAvailabilityService,
   deleteAvailability as deleteAvailabilityService,
+  listMyAvailability as listMyAvailabilityService,
   ValidationError,
   NotFoundError,
   ConflictError,
   ForbiddenError,
 } from "../services/availability.service";
+
+// GET /api/availability/mine — list all of this instructor's slots.
+export async function listMyAvailability(req: Request, res: Response) {
+  try {
+    const instructorId = req.user!.id;
+    const slots = await listMyAvailabilityService(instructorId);
+    return res.status(200).json({ slots });
+  } catch (err) {
+    console.error("availability listMyAvailability error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
 
 export async function createAvailability(req: Request, res: Response) {
   try {

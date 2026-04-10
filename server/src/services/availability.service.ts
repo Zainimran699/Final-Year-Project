@@ -89,6 +89,24 @@ export async function createAvailability(
   return created;
 }
 
+// Returns all availability slots for this instructor, newest first.
+export async function listMyAvailability(
+  instructorId: number
+): Promise<AvailabilitySlot[]> {
+  return prisma.availability.findMany({
+    where: { instructorId },
+    select: {
+      id: true,
+      instructorId: true,
+      slotDate: true,
+      startTime: true,
+      endTime: true,
+      isBooked: true,
+    },
+    orderBy: [{ slotDate: "desc" }, { startTime: "desc" }],
+  });
+}
+
 export async function deleteAvailability(
   instructorId: number,
   availabilityId: number

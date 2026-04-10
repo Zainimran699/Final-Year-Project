@@ -33,4 +33,9 @@ router.delete("/hazard/:id", adminHazard.deleteQuestion);
 // Stats
 router.get("/stats", adminStats.getStats);
 
+// Learners
+import * as adminLearner from "../controllers/adminLearner.controller";
+router.get("/learners", adminLearner.listLearners);
+router.get("/learners/:id/results", adminLearner.getLearnerResults);
+
 export default router;
