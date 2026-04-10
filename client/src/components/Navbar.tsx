@@ -26,6 +26,7 @@ const LINKS_BY_ROLE: Record<Role, NavItem[]> = {
     { label: "Dashboard", href: "/admin/dashboard" },
     { label: "Theory Questions", href: "/admin/questions" },
     { label: "Hazard Questions", href: "/admin/hazard" },
+    { label: "Learners", href: "/admin/learners" },
   ],
 };
 
@@ -71,7 +72,7 @@ export default function Navbar() {
           }
           className="text-xl font-bold text-blue-600"
         >
-          DriveReady
+          DriveReady221
         </Link>
 
         {/* Right side: role-specific links + logout */}

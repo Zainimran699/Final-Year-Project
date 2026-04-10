@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback(
-    async (name: string, email: string, password: string, role: Role) => {
+    async (name: string, email: string, password: string, role: Role, location?: string) => {
       setLoading(true);
       try {
         // Backend returns { user } only on register (no token), so we
@@ -57,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email,
           password,
           role,
+          location,
         });
         const res = await api.post<AuthResponse>("/api/auth/login", {
           email,

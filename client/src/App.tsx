@@ -30,6 +30,7 @@ import InstructorBookings from "./pages/InstructorBookings";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminQuestions from "./pages/AdminQuestions";
 import AdminHazard from "./pages/AdminHazard";
+import AdminLearners from "./pages/AdminLearners";
 
 // Route tree (react-router-dom v7 data-router style).
 //
@@ -116,6 +117,7 @@ const router = createBrowserRouter([
               { path: "dashboard", element: <AdminDashboard /> },
               { path: "questions", element: <AdminQuestions /> },
               { path: "hazard", element: <AdminHazard /> },
+              { path: "learners", element: <AdminLearners /> },
             ],
           },
         ],
