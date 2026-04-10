@@ -40,15 +40,20 @@ function isFutureSlot(slotDate: string, startTime: string): boolean {
 export async function listInstructors(
   locationFilter?: string
 ): Promise<PublicInstructor[]> {
-  // The `instructorProfile: { isNot: null }` filter is defensive — protects
-  // against an instructor row without a profile (shouldn't exist, but the
-  // schema permits it because InstructorProfile.userId is unique-not-required).
-  const profileWhere: Record<string, unknown> = { isNot: null };
+  // Build the Prisma relation-filter for instructorProfile.
+  // Without a search term we just check the profile exists (isNot: null).
+  // With a search term we use `is: { location: ... }` — having a matching
+  // location already implies the profile exists, and Prisma doesn't allow
+  // mixing `isNot` with field-level conditions at the same object level.
+  let profileWhere: Record<string, unknown>;
   if (locationFilter && locationFilter.trim().length > 0) {
-    profileWhere.location = {
-      contains: locationFilter.trim(),
-      mode: "insensitive",
+    profileWhere = {
+      is: {
+        location: { contains: locationFilter.trim(), mode: "insensitive" },
+      },
     };
+  } else {
+    profileWhere = { isNot: null };
   }
 
   const rows = await prisma.user.findMany({

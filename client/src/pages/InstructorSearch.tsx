@@ -30,9 +30,10 @@ export default function InstructorSearch() {
   function loadInstructors(location?: string) {
     setLoadError(null);
     const params = location ? `?location=${encodeURIComponent(location)}` : "";
+    // Backend returns { instructors: [...] }, so unwrap the named key.
     api
-      .get<PublicInstructor[]>(`/api/instructors${params}`)
-      .then((res) => setInstructors(res.data))
+      .get<{ instructors: PublicInstructor[] }>(`/api/instructors${params}`)
+      .then((res) => setInstructors(res.data.instructors))
       .catch((err: unknown) => {
         const message =
           (err as { response?: { data?: { error?: string } } })?.response?.data
@@ -55,8 +56,9 @@ export default function InstructorSearch() {
     }
     setExpandLoading(true);
     try {
-      const res = await api.get<InstructorWithSlots>(`/api/instructors/${id}`);
-      setExpanded(res.data);
+      // Backend returns { instructor: {...} }, so unwrap the named key.
+      const res = await api.get<{ instructor: InstructorWithSlots }>(`/api/instructors/${id}`);
+      setExpanded(res.data.instructor);
     } catch {
       setToast({ message: "Failed to load instructor details", type: "error" });
     } finally {
