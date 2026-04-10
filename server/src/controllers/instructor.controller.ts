@@ -6,9 +6,12 @@ import {
   NotFoundError,
 } from "../services/instructor.service";
 
-export async function listInstructors(_req: Request, res: Response) {
+export async function listInstructors(req: Request, res: Response) {
   try {
-    const instructors = await listInstructorsService();
+    // Optional ?location= query param for town/postcode search.
+    const location =
+      typeof req.query.location === "string" ? req.query.location : undefined;
+    const instructors = await listInstructorsService(location);
     return res.status(200).json({ instructors });
   } catch (err) {
     console.error("instructor listInstructors error:", err);

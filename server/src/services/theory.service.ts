@@ -71,7 +71,8 @@ export async function getRandomQuestions(): Promise<PublicTheoryQuestion[]> {
 
 export async function submitTest(
   userId: number,
-  answers: SubmitAnswer[]
+  answers: SubmitAnswer[],
+  timeTakenSeconds?: number
 ): Promise<SubmitResult> {
   if (!Array.isArray(answers) || answers.length === 0) {
     throw new ValidationError("answers must be a non-empty array");
@@ -123,6 +124,7 @@ export async function submitTest(
       totalQuestions: total,
       passed,
       type: "theory",
+      timeTakenSeconds: timeTakenSeconds ?? null,
     },
   });
 

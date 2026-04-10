@@ -208,11 +208,13 @@ async function main() {
   });
 
   // --- Hazard questions (5) ---
-  // Placeholder image URLs from Unsplash (public, no auth needed)
+  // Unsplash image URLs using specific driving/road-scene photos.
+  // The ?w=800&q=80 suffix requests a resized JPEG — fast to load, no auth.
   await prisma.hazardQuestion.createMany({
     data: [
       {
-        imageUrl: "https://images.unsplash.com/photo-1502877338535-766e1452684a",
+        imageUrl:
+          "https://images.unsplash.com/photo-1502877338535-766e1452684a?w=800&q=80",
         questionText: "What is the developing hazard in this scene?",
         optionA: "Parked car",
         optionB: "Pedestrian about to cross",
@@ -223,7 +225,8 @@ async function main() {
           "A pedestrian near the kerb is the developing hazard you should react to.",
       },
       {
-        imageUrl: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d",
+        imageUrl:
+          "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&q=80",
         questionText: "Which hazard requires immediate action?",
         optionA: "Cyclist ahead",
         optionB: "Sunlight",
@@ -234,17 +237,20 @@ async function main() {
           "The cyclist may swerve, so reduce speed and prepare to give space.",
       },
       {
-        imageUrl: "https://images.unsplash.com/photo-1503376780353-7e6692767b70",
+        imageUrl:
+          "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&q=80",
         questionText: "What should you do approaching this junction?",
         optionA: "Speed up",
         optionB: "Cover the brake and check mirrors",
         optionC: "Sound horn",
         optionD: "Change lanes",
         correctOption: "b",
-        description: "Always cover the brake and scan when approaching a junction.",
+        description:
+          "Always cover the brake and scan when approaching a junction.",
       },
       {
-        imageUrl: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8",
+        imageUrl:
+          "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800&q=80",
         questionText: "What is the main hazard on a wet road like this?",
         optionA: "Aquaplaning risk",
         optionB: "Bright reflections",
@@ -255,7 +261,8 @@ async function main() {
           "Wet roads increase stopping distance and risk of aquaplaning.",
       },
       {
-        imageUrl: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800",
+        imageUrl:
+          "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&q=80",
         questionText:
           "Which is the safest reaction to oncoming headlights at night?",
         optionA: "Stare at them",
@@ -274,19 +281,19 @@ async function main() {
     data: [
       {
         instructorId: instructor.id,
-        slotDate: "2026-04-10",
+        slotDate: "2026-06-15",
         startTime: "09:00",
         endTime: "10:00",
       },
       {
         instructorId: instructor.id,
-        slotDate: "2026-04-10",
+        slotDate: "2026-06-15",
         startTime: "11:00",
         endTime: "12:00",
       },
       {
         instructorId: instructor.id,
-        slotDate: "2026-04-11",
+        slotDate: "2026-06-16",
         startTime: "14:00",
         endTime: "15:00",
       },

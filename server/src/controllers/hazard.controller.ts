@@ -41,8 +41,16 @@ export async function submitTest(req: Request, res: Response) {
 
     // safe: authenticateToken runs before this handler.
     const userId = req.user!.id;
+    const timeTakenSeconds =
+      typeof req.body.timeTakenSeconds === "number"
+        ? Math.round(req.body.timeTakenSeconds)
+        : undefined;
 
-    const result = await submitTestService(userId, answers as SubmitAnswer[]);
+    const result = await submitTestService(
+      userId,
+      answers as SubmitAnswer[],
+      timeTakenSeconds
+    );
     return res.status(200).json(result);
   } catch (err) {
     if (err instanceof ValidationError) {

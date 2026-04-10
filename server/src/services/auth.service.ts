@@ -25,6 +25,7 @@ export type RegisterInput = {
   email: string;
   password: string;
   role: "learner" | "instructor" | "admin";
+  location?: string; // optional postcode/town at registration
 };
 
 export type LoginInput = {
@@ -53,6 +54,7 @@ export async function registerUser(input: RegisterInput): Promise<SafeUser> {
       email: input.email,
       passwordHash,
       role: input.role,
+      location: input.location?.trim() || null,
     },
     select: { id: true, name: true, email: true, role: true },
   });

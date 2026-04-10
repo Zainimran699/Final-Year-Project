@@ -6,6 +6,7 @@ export type TestResultRow = {
   score: number;
   totalQuestions: number;
   passed: boolean;
+  timeTakenSeconds: number | null;
   takenAt: Date;
 };
 
@@ -70,6 +71,7 @@ export async function getMyProgress(userId: number): Promise<ProgressSummary> {
       score: true,
       totalQuestions: true,
       passed: true,
+      timeTakenSeconds: true,
       takenAt: true,
     },
     orderBy: [{ takenAt: "desc" }],

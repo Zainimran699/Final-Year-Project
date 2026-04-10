@@ -36,12 +36,23 @@ function isFutureSlot(slotDate: string, startTime: string): boolean {
   return slotMoment.getTime() > Date.now();
 }
 
-export async function listInstructors(): Promise<PublicInstructor[]> {
+// Optional location filter — case-insensitive partial match on profile location.
+export async function listInstructors(
+  locationFilter?: string
+): Promise<PublicInstructor[]> {
   // The `instructorProfile: { isNot: null }` filter is defensive — protects
   // against an instructor row without a profile (shouldn't exist, but the
   // schema permits it because InstructorProfile.userId is unique-not-required).
+  const profileWhere: Record<string, unknown> = { isNot: null };
+  if (locationFilter && locationFilter.trim().length > 0) {
+    profileWhere.location = {
+      contains: locationFilter.trim(),
+      mode: "insensitive",
+    };
+  }
+
   const rows = await prisma.user.findMany({
-    where: { role: "instructor", instructorProfile: { isNot: null } },
+    where: { role: "instructor", instructorProfile: profileWhere },
     select: {
       id: true,
       name: true,
