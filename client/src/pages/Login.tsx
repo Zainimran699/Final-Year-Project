@@ -3,6 +3,8 @@ import type { FormEvent } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { dashboardPathForRole } from "../types";
+import SmartNavbar from "../components/SmartNavbar";
+import Footer from "../components/Footer";
 
 export default function Login() {
   const { login, loading, user } = useAuth();
@@ -37,14 +39,16 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-md border border-gray-100 p-8">
-        {/* Brand + heading */}
-        <div className="text-center mb-6">
-          <p className="text-xl font-bold text-blue-600 mb-4">DriveReady221</p>
-          <h1 className="text-3xl font-bold text-gray-900">Welcome back</h1>
-          <p className="text-gray-500 mt-1">Sign in to your account</p>
-        </div>
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <SmartNavbar />
+
+      <main className="flex-1 flex items-center justify-center p-4 py-12">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-md border border-gray-100 p-8">
+          {/* Heading — brand lives in the navbar above */}
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold text-gray-900">Welcome back</h1>
+            <p className="text-gray-500 mt-1">Sign in to your account</p>
+          </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Email field */}
@@ -115,16 +119,19 @@ export default function Login() {
           </button>
         </form>
 
-        <p className="text-sm text-gray-600 mt-6 text-center">
-          Don&apos;t have an account?{" "}
-          <Link
-            to="/register"
-            className="text-blue-600 hover:text-blue-700 font-medium"
-          >
-            Register here
-          </Link>
-        </p>
-      </div>
+          <p className="text-sm text-gray-600 mt-6 text-center">
+            Don&apos;t have an account?{" "}
+            <Link
+              to="/register"
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Register here
+            </Link>
+          </p>
+        </div>
+      </main>
+
+      <Footer />
     </div>
   );
 }
