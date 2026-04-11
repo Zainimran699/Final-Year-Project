@@ -1,5 +1,5 @@
 import { useState } from "react";
-import PublicNavbar from "../components/PublicNavbar";
+import SmartNavbar from "../components/SmartNavbar";
 import Footer from "../components/Footer";
 
 // FAQ data — questions and answers about the platform.
@@ -66,7 +66,7 @@ export default function FAQ() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <PublicNavbar />
+      <SmartNavbar />
 
       <main className="flex-1 py-16">
         <div className="max-w-3xl mx-auto px-6">

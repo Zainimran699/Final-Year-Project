@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
-import PublicNavbar from "../components/PublicNavbar";
+import SmartNavbar from "../components/SmartNavbar";
 import Footer from "../components/Footer";
 
 // Public landing page — always shown when the system starts.
 // Introduces DriveReady221, explains features, and guides users to register/login.
+// Uses SmartNavbar so logged-in users see their authenticated nav links.
 export default function Landing() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <PublicNavbar />
+      <SmartNavbar />
 
       {/* Hero section */}
       <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white py-20">

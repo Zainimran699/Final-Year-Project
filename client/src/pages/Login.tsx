@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { dashboardPathForRole } from "../types";
 
@@ -13,14 +13,11 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Back-button fix: if the user is already logged in and navigates
-  // back to /login, redirect them to their dashboard instead of showing
-  // the login form. This prevents the confusing "back button logs me out"
-  // experience — auth state stays intact, we just don't show login to
-  // authed users.
+  // Back-button fix: if the user is already logged in, redirect to their
+  // dashboard. Uses <Navigate> (not navigate()) because calling navigate()
+  // during render is a side-effect that produces a blank page.
   if (user) {
-    navigate(dashboardPathForRole(user.role), { replace: true });
-    return null;
+    return <Navigate to={dashboardPathForRole(user.role)} replace />;
   }
 
   async function handleSubmit(e: FormEvent) {

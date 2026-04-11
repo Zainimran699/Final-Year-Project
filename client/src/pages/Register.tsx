@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { dashboardPathForRole } from "../types";
 import type { Role } from "../types";
@@ -17,11 +17,10 @@ export default function Register() {
   const [role, setRole] = useState<Role>("learner");
   const [error, setError] = useState<string | null>(null);
 
-  // Back-button fix: if already logged in, redirect to dashboard instead
-  // of showing the register form. Mirrors the same guard in Login.tsx.
+  // Back-button fix: if already logged in, redirect to their dashboard.
+  // Uses <Navigate> (not navigate()) to avoid side-effects during render.
   if (user) {
-    navigate(dashboardPathForRole(user.role), { replace: true });
-    return null;
+    return <Navigate to={dashboardPathForRole(user.role)} replace />;
   }
 
   async function handleSubmit(e: FormEvent) {

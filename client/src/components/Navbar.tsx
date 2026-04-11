@@ -61,18 +61,10 @@ export default function Navbar() {
   return (
     <header className="bg-white border-b border-gray-200 shadow-sm">
       <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-6">
-        {/* Brand — links to the user's own home dashboard */}
-        <Link
-          to={
-            user.role === "learner"
-              ? "/dashboard"
-              : user.role === "instructor"
-                ? "/instructor/dashboard"
-                : "/admin/dashboard"
-          }
-          className="text-xl font-bold text-blue-600"
-        >
-          DriveReady221
+        {/* Brand — links to home page; user stays logged in */}
+        <Link to="/" className="flex items-center gap-2">
+          <img src="/logo.png" alt="DriveReady221" className="h-8 w-8 rounded" />
+          <span className="text-xl font-bold text-blue-600">DriveReady221</span>
         </Link>
 
         {/* Right side: role-specific links + logout */}

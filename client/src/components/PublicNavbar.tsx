@@ -21,9 +21,10 @@ export default function PublicNavbar() {
   return (
     <header className="bg-white border-b border-gray-200 shadow-sm">
       <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-6">
-        {/* Brand */}
-        <Link to="/" className="text-xl font-bold text-blue-600">
-          DriveReady221
+        {/* Brand with logo */}
+        <Link to="/" className="flex items-center gap-2">
+          <img src="/logo.png" alt="DriveReady221" className="h-8 w-8 rounded" />
+          <span className="text-xl font-bold text-blue-600">DriveReady221</span>
         </Link>
 
         {/* Navigation links + auth buttons */}

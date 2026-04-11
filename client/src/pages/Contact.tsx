@@ -1,11 +1,12 @@
-import PublicNavbar from "../components/PublicNavbar";
+import SmartNavbar from "../components/SmartNavbar";
 import Footer from "../components/Footer";
 
-// Public Contact Us page — accessible without login.
+// Contact Us page — accessible to both guests and logged-in users.
+// Uses SmartNavbar so logged-in users keep their session.
 export default function Contact() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <PublicNavbar />
+      <SmartNavbar />
 
       <main className="flex-1 py-16">
         <div className="max-w-3xl mx-auto px-6">
