@@ -1,3 +1,32 @@
+/**
+ * App.tsx — React Router configuration (data-router style).
+ *
+ * Defines the entire route tree for the application. All routes are wrapped
+ * in AuthProvider at the root so every page has access to auth context.
+ *
+ * Route structure:
+ *   PUBLIC (no login required):
+ *     /                    → Landing page (homepage)
+ *     /login               → Login form
+ *     /register            → Registration form
+ *     /verify-otp          → Email OTP verification (after register)
+ *     /forgot-password     → Enter email to receive reset OTP
+ *     /reset-password      → Enter reset OTP + new password
+ *     /contact             → Contact Us
+ *     /faq                 → FAQ
+ *
+ *   PRIVATE (RequireAuth → shows Navbar + guards):
+ *     Learner:
+ *       /dashboard, /theory, /hazard, /instructors, /progress, /bookings
+ *     Instructor:
+ *       /instructor/dashboard, /instructor/profile,
+ *       /instructor/availability, /instructor/bookings
+ *     Admin:
+ *       /admin/dashboard, /admin/questions, /admin/hazard, /admin/learners
+ *
+ *   Catch-all → redirect to /
+ */
+
 import {
   createBrowserRouter,
   Navigate,
@@ -12,6 +41,9 @@ import RequireRole from "./components/RequireRole";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import VerifyOtp from "./pages/VerifyOtp";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Contact from "./pages/Contact";
 import FAQ from "./pages/FAQ";
 
@@ -35,33 +67,6 @@ import AdminQuestions from "./pages/AdminQuestions";
 import AdminHazard from "./pages/AdminHazard";
 import AdminLearners from "./pages/AdminLearners";
 
-// Route tree (react-router-dom v7 data-router style).
-//
-// Layout shape:
-//   <AuthProvider>                      ← root, gives auth context to all routes
-//     <Outlet />                        ← renders the matched child
-//   </AuthProvider>
-//     ├── / (Landing page)              ← public homepage (always shown first)
-//     ├── /login, /register             ← public auth pages
-//     ├── /contact, /faq               ← public info pages
-//     └── /dashboard + RequireAuth      ← guards everything below, renders <Navbar /><Outlet />
-//           ├── RequireRole "learner"
-//           │     ├── /dashboard
-//           │     ├── /theory
-//           │     ├── /hazard
-//           │     ├── /instructors
-//           │     ├── /progress
-//           │     └── /bookings
-//           ├── /instructor + RequireRole "instructor"
-//           │     ├── /instructor/dashboard
-//           │     ├── /instructor/profile
-//           │     ├── /instructor/availability
-//           │     └── /instructor/bookings
-//           └── /admin + RequireRole "admin"
-//                 ├── /admin/dashboard
-//                 ├── /admin/questions
-//                 ├── /admin/hazard
-//                 └── /admin/learners
 const router = createBrowserRouter([
   {
     element: (
@@ -74,6 +79,9 @@ const router = createBrowserRouter([
       { path: "/", element: <Landing /> },
       { path: "/login", element: <Login /> },
       { path: "/register", element: <Register /> },
+      { path: "/verify-otp", element: <VerifyOtp /> },
+      { path: "/forgot-password", element: <ForgotPassword /> },
+      { path: "/reset-password", element: <ResetPassword /> },
       { path: "/contact", element: <Contact /> },
       { path: "/faq", element: <FAQ /> },
 

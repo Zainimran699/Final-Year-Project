@@ -66,13 +66,15 @@ export default function InstructorSearch() {
     }
   }
 
-  // Book a slot.
+  // Book a slot. On 409 (already booked by someone else), re-fetch the
+  // instructor's slots so the UI shows up-to-date availability instead of
+  // letting the user keep clicking a stale "Book" button.
   async function bookSlot(slot: AvailabilitySlot) {
     setBookingSlotId(slot.id);
     try {
       await api.post("/api/bookings", { availabilityId: slot.id });
       setToast({ message: "Lesson booked successfully!", type: "success" });
-      // Refresh the expanded instructor to reflect the booked slot.
+      // Remove the just-booked slot from the local list.
       if (expanded) {
         setExpanded({
           ...expanded,
@@ -80,10 +82,22 @@ export default function InstructorSearch() {
         });
       }
     } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error ?? "Booking failed";
+      const resp = (err as { response?: { status?: number; data?: { error?: string } } })?.response;
+      const message = resp?.data?.error ?? "Booking failed";
       setToast({ message, type: "error" });
+
+      // If the slot was already booked (409), re-fetch the instructor's
+      // slots so stale data is replaced with the real availability.
+      if (resp?.status === 409 && expanded) {
+        try {
+          const res = await api.get<{ instructor: InstructorWithSlots }>(
+            `/api/instructors/${expanded.id}`
+          );
+          setExpanded(res.data.instructor);
+        } catch {
+          // Silent — the toast already told the user the booking failed.
+        }
+      }
     } finally {
       setBookingSlotId(null);
     }

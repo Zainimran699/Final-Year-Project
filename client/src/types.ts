@@ -14,6 +14,7 @@ export type AuthResponse = {
 
 export type RegisterResponse = {
   user: User;
+  message: string;
 };
 
 // Theory quiz — matches PublicTheoryQuestion on the server (no correctOption).

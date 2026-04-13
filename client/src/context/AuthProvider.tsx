@@ -1,3 +1,21 @@
+/**
+ * AuthProvider — the single source of auth state for the entire React app.
+ *
+ * Wraps the component tree (via App.tsx root layout route) and provides:
+ *   - user / token / loading state
+ *   - login()    — POST /api/auth/login   → sets state + localStorage
+ *   - register() — POST /api/auth/register → does NOT set state (account is
+ *                  unverified; user must enter the signup OTP first)
+ *   - logout()   — clears state + localStorage
+ *
+ * State is persisted in localStorage so a page refresh re-hydrates the session.
+ *
+ * Data flow:
+ *   Component calls login() → Axios POST → Backend validates credentials →
+ *   Returns { token, user } → Provider stores in state + localStorage →
+ *   Downstream components re-render with the new user.
+ */
+
 import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import api from "../api";
@@ -9,8 +27,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Rehydrate from localStorage on mount. If the blob is malformed, clear it
-  // and start clean — better than throwing at startup.
+  // ---------------------------------------------------------------------------
+  // Rehydrate from localStorage on mount. If the stored blob is malformed,
+  // clear it and start clean — better than throwing at startup.
+  // ---------------------------------------------------------------------------
   useEffect(() => {
     try {
       const storedToken = localStorage.getItem("token");
@@ -25,6 +45,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // ---------------------------------------------------------------------------
+  // login — authenticates and stores the session.
+  // ---------------------------------------------------------------------------
   const login = useCallback(async (email: string, password: string) => {
     setLoading(true);
     try {
@@ -45,13 +68,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // ---------------------------------------------------------------------------
+  // register — creates the account but does NOT log in.
+  //
+  // The account starts as unverified. The backend sends a signup OTP email.
+  // The Register page should redirect to /verify-otp after a successful call.
+  // ---------------------------------------------------------------------------
   const register = useCallback(
-    async (name: string, email: string, password: string, role: Role, location?: string) => {
+    async (
+      name: string,
+      email: string,
+      password: string,
+      role: Role,
+      location?: string
+    ) => {
       setLoading(true);
       try {
-        // Backend returns { user } only on register (no token), so we
-        // immediately follow up with a login using the same credentials
-        // to avoid a redundant form.
         await api.post<RegisterResponse>("/api/auth/register", {
           name,
           email,
@@ -59,16 +91,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role,
           location,
         });
-        const res = await api.post<AuthResponse>("/api/auth/login", {
-          email,
-          password,
-        });
-        const { token: newToken, user: newUser } = res.data;
-        localStorage.setItem("token", newToken);
-        localStorage.setItem("user", JSON.stringify(newUser));
-        setToken(newToken);
-        setUser(newUser);
-        return newUser;
+        // Return the email so the page can pass it to the verify-otp route.
+        return { email };
       } finally {
         setLoading(false);
       }
@@ -76,6 +100,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     []
   );
 
+  // ---------------------------------------------------------------------------
+  // logout — wipes everything.
+  // ---------------------------------------------------------------------------
   const logout = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");

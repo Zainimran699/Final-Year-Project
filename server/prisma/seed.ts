@@ -19,12 +19,15 @@ async function main() {
   const instructorHash = await bcrypt.hash("test123", 10);
   const learnerHash = await bcrypt.hash("test123", 10);
 
+  // Seeded users are marked as isVerified: true so they can log in
+  // immediately without needing to go through the OTP email flow.
   const admin = await prisma.user.create({
     data: {
       name: "Admin",
       email: "admin@test.com",
       passwordHash: adminHash,
       role: "admin",
+      isVerified: true,
     },
   });
 
@@ -34,6 +37,7 @@ async function main() {
       email: "instructor@test.com",
       passwordHash: instructorHash,
       role: "instructor",
+      isVerified: true,
       instructorProfile: {
         create: {
           bio: "Friendly ADI with 8 years of experience.",
@@ -50,6 +54,7 @@ async function main() {
       email: "learner@test.com",
       passwordHash: learnerHash,
       role: "learner",
+      isVerified: true,
     },
   });
 
