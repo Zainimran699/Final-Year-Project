@@ -20,6 +20,18 @@ model User {
   location     String? // postcode or town entered at registration
   createdAt    DateTime @default(now())
 
+  // --- Email verification (signup OTP) ---
+  // isVerified starts false; flipped to true after the user enters a valid
+  // signup OTP. Login is blocked until isVerified is true.
+  isVerified       Boolean   @default(false)
+  signupOtp        String? // 6-digit code, hashed or plain (plain for FYP)
+  signupOtpExpires DateTime? // null once used / cleared
+
+  // --- Password reset OTP ---
+  // Separate from signup OTP so one flow never interferes with the other.
+  resetOtp        String?
+  resetOtpExpires DateTime?
+
   instructorProfile    InstructorProfile?
   testResults          TestResult[]
   availabilities       Availability[]     @relation("InstructorAvailabilities")
