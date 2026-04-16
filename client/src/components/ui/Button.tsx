@@ -30,7 +30,8 @@
  */
 
 import { motion } from "framer-motion";
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { HTMLMotionProps } from "framer-motion";
+import type { ReactNode } from "react";
 
 type Variant =
   | "primary"
@@ -41,13 +42,21 @@ type Variant =
   | "gradient";
 type Size = "sm" | "md" | "lg";
 
-type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "ref"> & {
+// NOTE — we extend framer-motion's HTMLMotionProps<"button"> (not React's
+// ButtonHTMLAttributes). motion.button overrides a handful of React DOM
+// event handlers (onDrag becomes a pan-gesture handler with PanInfo), so
+// mixing them causes TS2322 conflicts under strict mode.
+//
+// We override `children` to plain ReactNode — HTMLMotionProps widens it to
+// include MotionValues, which we never render as button text anyway.
+type ButtonProps = Omit<HTMLMotionProps<"button">, "ref" | "children"> & {
   variant?: Variant;
   size?: Size;
   loading?: boolean;
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
   fullWidth?: boolean;
+  children?: ReactNode;
 };
 
 const VARIANT_CLASSES: Record<Variant, string> = {

@@ -25,12 +25,17 @@
  */
 
 import { motion } from "framer-motion";
-import type { HTMLAttributes, ReactNode } from "react";
-import type { MotionProps } from "framer-motion";
+import type { HTMLMotionProps, MotionProps } from "framer-motion";
+import type { ReactNode } from "react";
 
 type Variant = "default" | "elevated" | "glass" | "highlight";
 
-type CardProps = Omit<HTMLAttributes<HTMLDivElement>, "ref"> & {
+// We extend framer-motion's HTMLMotionProps<"div"> (not React's
+// HTMLAttributes). motion.div overrides the DOM drag handlers with
+// pan-gesture ones (PanInfo), so mixing the two causes TS2322 clashes.
+// `children` is narrowed to ReactNode because HTMLMotionProps widens it
+// to include MotionValues, which we never render.
+type CardProps = Omit<HTMLMotionProps<"div">, "ref" | "children"> & {
   variant?: Variant;
   hover?: boolean;
   as?: "div" | "section" | "article";
