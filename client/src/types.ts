@@ -197,6 +197,45 @@ export type AdminHazardQuestion = {
   description: string;
 };
 
+// ---------------------------------------------------------------------------
+// AI Assistant types — drafts returned by POST /api/admin/ai/*
+// ---------------------------------------------------------------------------
+//
+// Mirrors the shapes in server/src/services/aiAssistant.service.ts. Drafts
+// are a strict subset of the admin CRUD types (no `id`) so callers can pre-
+// fill the existing AdminQuestions / AdminHazard forms by spreading them
+// over the form state.
+
+export type TheoryQuestionDraft = {
+  questionText: string;
+  optionA: string;
+  optionB: string;
+  optionC: string;
+  optionD: string;
+  correctOption: OptionKey;
+  category: string;
+};
+
+export type HazardQuestionDraft = {
+  imageUrl: string;
+  questionText: string;
+  optionA: string;
+  optionB: string;
+  optionC: string;
+  optionD: string;
+  correctOption: OptionKey;
+  description: string;
+};
+
+// The five field-kinds the "✨ Improve wording" button supports. Must match
+// the union in server/src/services/aiAssistant.service.ts.
+export type ImproveKind =
+  | "theory-question"
+  | "theory-option"
+  | "hazard-question"
+  | "hazard-description"
+  | "generic";
+
 // Single source of truth for "where does this role live?"
 // Used by Login, Register, RequireRole's mismatch fallback, and PlaceholderPage's
 // "Back to Dashboard" button. If a new role is ever added, only this function

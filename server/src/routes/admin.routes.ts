@@ -4,6 +4,7 @@ import * as adminUser from "../controllers/adminUser.controller";
 import * as adminTheory from "../controllers/adminTheory.controller";
 import * as adminHazard from "../controllers/adminHazard.controller";
 import * as adminStats from "../controllers/adminStats.controller";
+import * as aiAssistant from "../controllers/aiAssistant.controller";
 
 const router = Router();
 
@@ -37,5 +38,14 @@ router.get("/stats", adminStats.getStats);
 import * as adminLearner from "../controllers/adminLearner.controller";
 router.get("/learners", adminLearner.listLearners);
 router.get("/learners/:id/results", adminLearner.getLearnerResults);
+
+// AI Assistant — draft theory/hazard questions via Gemini. Admin-only by
+// virtue of the router-level middleware. Drafts are NOT persisted by these
+// routes; the admin reviews/edits and then saves through the existing
+// CRUD routes above. See [aiAssistant.service.ts] for the full rationale.
+router.post("/ai/theory", aiAssistant.generateTheory);
+router.post("/ai/theory/batch", aiAssistant.generateTheoryBatchHandler);
+router.post("/ai/hazard", aiAssistant.generateHazard);
+router.post("/ai/improve", aiAssistant.improveTextHandler);
 
 export default router;
