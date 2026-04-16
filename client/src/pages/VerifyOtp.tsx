@@ -1,6 +1,9 @@
 /**
  * Verify OTP page — entered after registration.
  *
+ * Phase-20 redesign: switched to the shared AuthLayout split-layout +
+ * Button primitive. State machine preserved byte-for-byte.
+ *
  * The user arrives here with their email (from query string or navigation
  * state). They enter the 6-digit OTP they received via email. On success
  * they are redirected to /login with a success message.
@@ -17,8 +20,8 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import api from "../api";
-import SmartNavbar from "../components/SmartNavbar";
-import Footer from "../components/Footer";
+import AuthLayout from "../components/ui/AuthLayout";
+import Button from "../components/ui/Button";
 
 export default function VerifyOtp() {
   const navigate = useNavigate();
@@ -94,108 +97,101 @@ export default function VerifyOtp() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <SmartNavbar />
-
-      <main className="flex-1 flex items-center justify-center p-4 py-12">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-md border border-gray-100 p-8">
-          {/* Heading */}
-          <div className="text-center mb-6">
-            <div className="mx-auto mb-4 w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-7 h-7 text-blue-600">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-              </svg>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              Verify your email
-            </h1>
-            <p className="text-gray-500 mt-1 text-sm sm:text-base">
-              Enter the 6-digit code we sent to your inbox
-            </p>
-          </div>
-
-          <form onSubmit={handleVerify} className="space-y-4">
-            {/* Email field */}
-            <div>
-              <label
-                className="block text-sm font-medium text-gray-700 mb-1"
-                htmlFor="verify-email"
-              >
-                Email
-              </label>
-              <input
-                id="verify-email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                autoComplete="email"
-              />
-            </div>
-
-            {/* OTP field */}
-            <div>
-              <label
-                className="block text-sm font-medium text-gray-700 mb-1"
-                htmlFor="otp"
-              >
-                Verification Code
-              </label>
-              <input
-                id="otp"
-                type="text"
-                inputMode="numeric"
-                maxLength={6}
-                required
-                value={otp}
-                onChange={(e) =>
-                  setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
-                }
-                placeholder="000000"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-center tracking-[0.3em] text-lg font-mono"
-                autoComplete="one-time-code"
-              />
-            </div>
-
-            {/* Error / success messages */}
-            {error && <p className="text-sm text-red-600">{error}</p>}
-            {success && <p className="text-sm text-green-600">{success}</p>}
-
-            {/* Verify button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2.5 rounded-lg transition-colors disabled:opacity-50"
-            >
-              {loading ? "Verifying..." : "Verify Email"}
-            </button>
-          </form>
-
-          {/* Resend + back to login links */}
-          <div className="mt-6 space-y-3 text-center">
-            <button
-              type="button"
-              onClick={handleResend}
-              disabled={resending}
-              className="text-sm text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50"
-            >
-              {resending ? "Sending..." : "Didn\u2019t receive the code? Resend"}
-            </button>
-            <p className="text-sm text-gray-600">
-              Already verified?{" "}
-              <Link
-                to="/login"
-                className="text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Sign in
-              </Link>
-            </p>
-          </div>
+    <AuthLayout
+      badge="Verify email"
+      title="Check your inbox"
+      subtitle="Enter the 6-digit code we just sent to verify your email address."
+      footer={
+        <>
+          Already verified?{" "}
+          <Link
+            to="/login"
+            className="text-blue-600 hover:text-blue-700 font-semibold"
+          >
+            Sign in
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleVerify} className="space-y-4">
+        {/* Email field */}
+        <div>
+          <label
+            className="block text-sm font-medium text-gray-700 mb-1.5"
+            htmlFor="verify-email"
+          >
+            Email
+          </label>
+          <input
+            id="verify-email"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-colors"
+            autoComplete="email"
+          />
         </div>
-      </main>
 
-      <Footer />
-    </div>
+        {/* OTP field — monospace + wide letter-spacing keeps the 6 digits
+            readable. Only accepts numeric input (stripped on change). */}
+        <div>
+          <label
+            className="block text-sm font-medium text-gray-700 mb-1.5"
+            htmlFor="otp"
+          >
+            Verification code
+          </label>
+          <input
+            id="otp"
+            type="text"
+            inputMode="numeric"
+            maxLength={6}
+            required
+            value={otp}
+            onChange={(e) =>
+              setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
+            }
+            placeholder="000000"
+            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center tracking-[0.4em] text-xl font-mono transition-colors"
+            autoComplete="one-time-code"
+          />
+        </div>
+
+        {/* Error / success messages */}
+        {error && (
+          <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2">
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        )}
+        {success && (
+          <div className="rounded-lg bg-green-50 border border-green-200 px-3 py-2">
+            <p className="text-sm text-green-700">{success}</p>
+          </div>
+        )}
+
+        <Button
+          type="submit"
+          variant="gradient"
+          size="lg"
+          fullWidth
+          loading={loading}
+        >
+          {loading ? "Verifying..." : "Verify email"}
+        </Button>
+      </form>
+
+      {/* Resend link */}
+      <div className="mt-5 text-center">
+        <button
+          type="button"
+          onClick={handleResend}
+          disabled={resending}
+          className="text-sm text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50"
+        >
+          {resending ? "Sending..." : "Didn\u2019t receive the code? Resend"}
+        </button>
+      </div>
+    </AuthLayout>
   );
 }
