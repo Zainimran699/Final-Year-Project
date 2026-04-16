@@ -14,5 +14,5 @@ const genAI = new GoogleGenerativeAI(apiKey);
 // that model from the v1beta API. "gemini-2.0-flash" is the current free-tier
 // flash model and the natural successor.
 export const geminiModel = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash",
+  model: "gemini-2.5-flash",
 });
